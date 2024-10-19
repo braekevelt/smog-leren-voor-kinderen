@@ -3,9 +3,14 @@ import { HAND_CONNECTIONS } from "@mediapipe/hands";
 import { HandLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
 
 // DOM elements
+const button = document.getElementById("button") as HTMLButtonElement;
 const video = document.getElementById("video") as HTMLVideoElement;
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 const canvasCtx = canvas.getContext("2d") as CanvasRenderingContext2D;
+
+button.addEventListener("click", () => {
+  video.hidden = !video.hidden;
+});
 
 // Start rendering loop
 const isWebCamSupported = !!navigator.mediaDevices?.getUserMedia;
@@ -60,9 +65,9 @@ async function render() {
     for (const landmarks of results.landmarks) {
       drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {
         color: "#00FF00",
-        lineWidth: 5,
+        lineWidth: 3,
       });
-      drawLandmarks(canvasCtx, landmarks, { color: "#FF0000", lineWidth: 2 });
+      drawLandmarks(canvasCtx, landmarks, { color: "#00FF00", radius: 3 });
     }
   }
   canvasCtx.restore();

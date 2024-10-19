@@ -4,11 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SMOG leren voor kinderen</title>
+    <link rel="stylesheet" href="/src/styles.css" />
   </head>
   <body>
-    <video id="video" style="position: absolute" autoplay playsinline></video>
-    <canvas id="canvas" style="position: absolute; left: 0px; top: 0px">
-    </canvas>
+    <button id="button">Video tonen / verbergen</button>
+    <div>
+      <video id="video" class="camera" autoplay playsinline></video>
+      <canvas id="canvas" class="camera"> </canvas>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
