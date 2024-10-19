@@ -1,77 +1,112 @@
+import { Camera } from "@mediapipe/camera_utils";
 import { drawConnectors, drawLandmarks } from "@mediapipe/drawing_utils";
-import { HAND_CONNECTIONS } from "@mediapipe/hands";
-import { HandLandmarker, FilesetResolver } from "@mediapipe/tasks-vision";
+import {
+  FACEMESH_TESSELATION,
+  HAND_CONNECTIONS,
+  POSE_CONNECTIONS,
+  Holistic,
+  Results,
+} from "@mediapipe/holistic";
 
-// DOM elements
-const button = document.getElementById("button") as HTMLButtonElement;
-const video = document.getElementById("video") as HTMLVideoElement;
-const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-const canvasCtx = canvas.getContext("2d") as CanvasRenderingContext2D;
+const videoElement = document.getElementById("input") as HTMLVideoElement;
+const canvasElement = document.getElementById("output") as HTMLCanvasElement;
+const canvasCtx = canvasElement.getContext("2d") as CanvasRenderingContext2D;
 
-button.addEventListener("click", () => {
-  video.hidden = !video.hidden;
-});
-
-// Start rendering loop
-const isWebCamSupported = !!navigator.mediaDevices?.getUserMedia;
-if (isWebCamSupported) {
-  navigator.mediaDevices
-    .getUserMedia({ video: true })
-    .then((stream) => {
-      video.srcObject = stream;
-      video.addEventListener("loadeddata", render);
-    })
-    .catch(() => {
-      alert(
-        "Geen toegang tot camera. Klik op 'camera toestaan' en probeer opnieuw."
-      );
-      location.reload();
-    });
-} else {
-  alert(
-    "Je browser is niet ondersteund. Probeer in een andere browser of een ander toestel."
-  );
-  location.reload();
-}
-
-// Load vision models
-const vision = await FilesetResolver.forVisionTasks(
-  "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm"
-);
-const handLandmarker = await HandLandmarker.createFromOptions(vision, {
-  baseOptions: {
-    modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
-    delegate: "GPU",
-  },
-  runningMode: "VIDEO",
-  numHands: 2,
-});
-
-// Rendering loop
-async function render() {
-  // Fit to frame
-  canvas.style.width = `${video.videoWidth}`;
-  canvas.style.height = `${video.videoHeight}`;
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-
-  // Detect in current frame
-  const results = handLandmarker.detectForVideo(video, performance.now());
-
-  // Draw results
+function onResults(results: Results) {
   canvasCtx.save();
-  canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-  if (results?.landmarks) {
-    for (const landmarks of results.landmarks) {
-      drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {
-        color: "#00FF00",
-        lineWidth: 3,
-      });
-      drawLandmarks(canvasCtx, landmarks, { color: "#00FF00", radius: 3 });
-    }
+  canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+  if (results.segmentationMask) {
+    canvasCtx.drawImage(
+      results.segmentationMask,
+      0,
+      0,
+      canvasElement.width,
+      canvasElement.height
+    );
+  }
+
+  // Only overwrite existing pixels.
+  canvasCtx.globalCompositeOperation = "source-in";
+  canvasCtx.fillStyle = "#00FF00";
+  canvasCtx.fillRect(0, 0, canvasElement.width, canvasElement.height);
+
+  // Only overwrite missing pixels.
+  canvasCtx.globalCompositeOperation = "destination-atop";
+  if (results.image) {
+    canvasCtx.drawImage(
+      results.image,
+      0,
+      0,
+      canvasElement.width,
+      canvasElement.height
+    );
+  }
+
+  canvasCtx.globalCompositeOperation = "source-over";
+  if (results.poseLandmarks) {
+    drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {
+      color: "#00FF00",
+      lineWidth: 4,
+    });
+    drawLandmarks(canvasCtx, results.poseLandmarks, {
+      color: "#FF0000",
+      lineWidth: 2,
+    });
+  }
+  if (results.faceLandmarks) {
+    drawConnectors(canvasCtx, results.faceLandmarks, FACEMESH_TESSELATION, {
+      color: "#C0C0C070",
+      lineWidth: 1,
+    });
+  }
+  if (results.leftHandLandmarks) {
+    drawConnectors(canvasCtx, results.leftHandLandmarks, HAND_CONNECTIONS, {
+      color: "#CC0000",
+      lineWidth: 5,
+    });
+    drawLandmarks(canvasCtx, results.leftHandLandmarks, {
+      color: "#00FF00",
+      lineWidth: 2,
+    });
+  }
+  if (results.rightHandLandmarks) {
+    drawConnectors(canvasCtx, results.rightHandLandmarks, HAND_CONNECTIONS, {
+      color: "#00CC00",
+      lineWidth: 5,
+    });
+    drawLandmarks(canvasCtx, results.rightHandLandmarks, {
+      color: "#FF0000",
+      lineWidth: 2,
+    });
   }
   canvasCtx.restore();
-
-  // Rerender on next frame
-  window.requestAnimationFrame(render);
 }
+
+const holistic = new Holistic({
+  locateFile: (file) => {
+    // return `https://cdn.jsdelivr.net/npm/@mediapipe/holistic@0.5.1675471629/${file}`;
+    return new URL(`/node_modules/@mediapipe/holistic/${file}`, import.meta.url)
+      .href;
+  },
+});
+holistic.setOptions({
+  modelComplexity: 1,
+  selfieMode: true,
+  enableFaceGeometry: false,
+  smoothLandmarks: true,
+  enableSegmentation: false,
+  smoothSegmentation: false,
+  refineFaceLandmarks: false,
+  minDetectionConfidence: 0.5,
+  minTrackingConfidence: 0.5,
+});
+holistic.onResults(onResults);
+
+const camera = new Camera(videoElement, {
+  onFrame: async () => {
+    await holistic.send({ image: videoElement });
+  },
+  width: 1280,
+  height: 720,
+});
+camera.start();
