@@ -1,12 +1,15 @@
 <!DOCTYPE html>
-<html>
+<html lang="nl">
   <head>
-    <meta charset="utf-8" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SMOG leren voor kinderen</title>
+    <link rel="stylesheet" href="/src/styles.css" />
   </head>
   <body>
     <div>
-      <video id="input"></video>
-      <canvas id="output" width="1280px" height="720px"></canvas>
+      <video id="input" hidden disabled autoplay playsinline></video>
+      <canvas id="output" class="fit-centered"></canvas>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
