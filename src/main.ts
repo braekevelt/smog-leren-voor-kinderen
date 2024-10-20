@@ -18,7 +18,10 @@ const HEIGHT = 720;
 
 // DOM elements
 const scoreElement = document.getElementById("score") as HTMLElement;
-const buttonElement = document.getElementById("show-tip") as HTMLButtonElement;
+const tipElement = document.getElementById("show-tip") as HTMLButtonElement;
+const cameraElement = document.getElementById(
+  "show-camera"
+) as HTMLButtonElement;
 const videoElement = document.getElementById("input") as HTMLVideoElement;
 const canvasElement = document.getElementById("output") as HTMLCanvasElement;
 const canvasCtx = canvasElement.getContext("2d") as CanvasRenderingContext2D;
@@ -38,9 +41,15 @@ let currentMovement = 0;
 
 // Tip
 let showTip = false;
-buttonElement.addEventListener("click", () => {
+tipElement.addEventListener("click", () => {
   showTip = !showTip;
   currentMovement = 0;
+});
+
+// Camera
+let showCamera = false;
+cameraElement.addEventListener("click", () => {
+  showCamera = !showCamera;
 });
 
 // Score
@@ -93,16 +102,18 @@ function draw(results: Results) {
   canvasCtx.fillRect(0, 0, canvasElement.width, canvasElement.height);
 
   // Only overwrite missing pixels.
-  // canvasCtx.globalCompositeOperation = "destination-atop";
-  // if (results.image) {
-  //   canvasCtx.drawImage(
-  //     results.image,
-  //     0,
-  //     0,
-  //     canvasElement.width,
-  //     canvasElement.height
-  //   );
-  // }
+  if (showCamera) {
+    canvasCtx.globalCompositeOperation = "destination-atop";
+    if (results.image) {
+      canvasCtx.drawImage(
+        results.image,
+        0,
+        0,
+        canvasElement.width,
+        canvasElement.height
+      );
+    }
+  }
 
   canvasCtx.globalCompositeOperation = "source-over";
   if (results.poseLandmarks) {
