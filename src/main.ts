@@ -8,11 +8,21 @@ import {
   Results,
 } from "@mediapipe/holistic";
 
+// DOM elements
+const WIDTH = screen.width;
+const HEIGHT = screen.height;
 const videoElement = document.getElementById("input") as HTMLVideoElement;
 const canvasElement = document.getElementById("output") as HTMLCanvasElement;
 const canvasCtx = canvasElement.getContext("2d") as CanvasRenderingContext2D;
 
-function onResults(results: Results) {
+// Resize to screen
+canvasElement.style.width = `${WIDTH}`;
+canvasElement.style.height = `${HEIGHT}`;
+canvasElement.width = WIDTH;
+canvasElement.height = HEIGHT;
+
+// Draw
+function draw(results: Results) {
   canvasCtx.save();
   canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
   if (results.segmentationMask) {
@@ -93,6 +103,7 @@ function onResults(results: Results) {
   canvasCtx.restore();
 }
 
+// Detection
 const holistic = new Holistic({
   locateFile: (file) => {
     // return `https://cdn.jsdelivr.net/npm/@mediapipe/holistic@0.5.1675471629/${file}`;
@@ -111,40 +122,12 @@ holistic.setOptions({
   minDetectionConfidence: 0.5,
   minTrackingConfidence: 0.5,
 });
-holistic.onResults(onResults);
+holistic.onResults(draw);
 
-async function render() {
-  // Fit to frame
-  canvasElement.style.width = `${videoElement.videoWidth}`;
-  canvasElement.style.height = `${videoElement.videoHeight}`;
-  canvasElement.width = videoElement.videoWidth;
-  canvasElement.height = videoElement.videoHeight;
-
-  // Detect and draw
-  await holistic.send({ image: videoElement });
-
-  // Rerender on next frame
-  window.requestAnimationFrame(render);
-}
-
-// Start rendering loop
-const isWebCamSupported = !!navigator.mediaDevices?.getUserMedia;
-if (isWebCamSupported) {
-  navigator.mediaDevices
-    .getUserMedia({ video: true })
-    .then((stream) => {
-      videoElement.srcObject = stream;
-      videoElement.addEventListener("loadeddata", render);
-    })
-    .catch(() => {
-      alert(
-        "Geen toegang tot camera. Klik op 'camera toestaan' en probeer opnieuw."
-      );
-      location.reload();
-    });
-} else {
-  alert(
-    "Je browser is niet ondersteund. Probeer in een andere browser of een ander toestel."
-  );
-  location.reload();
-}
+// Camera
+const camera = new Camera(videoElement, {
+  onFrame: async () => holistic.send({ image: videoElement }),
+  width: WIDTH,
+  height: HEIGHT,
+});
+camera.start();
