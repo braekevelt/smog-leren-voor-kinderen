@@ -8,9 +8,11 @@ import {
   Results,
 } from "@mediapipe/holistic";
 
+// Constants
+const WIDTH = 1280;
+const HEIGHT = 720;
+
 // DOM elements
-const WIDTH = screen.width;
-const HEIGHT = screen.height;
 const videoElement = document.getElementById("input") as HTMLVideoElement;
 const canvasElement = document.getElementById("output") as HTMLCanvasElement;
 const canvasCtx = canvasElement.getContext("2d") as CanvasRenderingContext2D;
@@ -66,7 +68,7 @@ function draw(results: Results) {
       ],
       {
         color: "#000000",
-        lineWidth: 4,
+        lineWidth: 3,
       }
     );
     // drawLandmarks(canvasCtx, results.poseLandmarks, {
