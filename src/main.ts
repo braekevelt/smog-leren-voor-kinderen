@@ -1,5 +1,9 @@
 import { Camera } from "@mediapipe/camera_utils";
-import { drawConnectors } from "@mediapipe/drawing_utils";
+import {
+  drawConnectors,
+  drawLandmarks,
+  NormalizedLandmark,
+} from "@mediapipe/drawing_utils";
 import {
   FACEMESH_CONTOURS,
   HAND_CONNECTIONS,
@@ -13,6 +17,8 @@ const WIDTH = 1280;
 const HEIGHT = 720;
 
 // DOM elements
+const scoreElement = document.getElementById("score") as HTMLElement;
+const buttonElement = document.getElementById("show-tip") as HTMLButtonElement;
 const videoElement = document.getElementById("input") as HTMLVideoElement;
 const canvasElement = document.getElementById("output") as HTMLCanvasElement;
 const canvasCtx = canvasElement.getContext("2d") as CanvasRenderingContext2D;
@@ -23,8 +29,52 @@ canvasElement.style.height = `${HEIGHT}`;
 canvasElement.width = WIDTH;
 canvasElement.height = HEIGHT;
 
+// Movements
+const movements = [
+  ["leftIndexFinger", "rightShoulder"],
+  ["leftIndexFinger", "leftHip"],
+];
+let currentMovement = 0;
+
+// Tip
+let showTip = false;
+buttonElement.addEventListener("click", () => {
+  showTip = !showTip;
+  currentMovement = 0;
+});
+
+// Score
+let score = 0;
+
 // Draw
 function draw(results: Results) {
+  // Win condition
+  const parts: Record<string, NormalizedLandmark> = {
+    leftHip: results.poseLandmarks?.[POSE_LANDMARKS.LEFT_HIP],
+    leftIndexFinger: results.leftHandLandmarks?.[8],
+    rightShoulder: results.poseLandmarks?.[POSE_LANDMARKS.RIGHT_SHOULDER],
+  };
+
+  const movement = movements[currentMovement];
+  const part = parts[movement[0]];
+  const target = parts[movement[1]];
+
+  if (part && target) {
+    if (
+      Math.abs(part.x - target.x) < 0.1 &&
+      Math.abs(part.y - target.y) < 0.1
+    ) {
+      currentMovement += 1;
+    }
+  }
+
+  if (currentMovement >= movement.length) {
+    score += 1;
+    scoreElement.innerHTML = `${score}`;
+    currentMovement = 0;
+  }
+
+  // Draw
   canvasCtx.save();
   canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
   if (results.segmentationMask) {
@@ -60,6 +110,9 @@ function draw(results: Results) {
       canvasCtx,
       results.poseLandmarks,
       [
+        [POSE_LANDMARKS.RIGHT_SHOULDER, POSE_LANDMARKS.RIGHT_HIP],
+        [POSE_LANDMARKS.RIGHT_HIP, POSE_LANDMARKS.LEFT_HIP],
+        [POSE_LANDMARKS.LEFT_HIP, POSE_LANDMARKS.LEFT_SHOULDER],
         [POSE_LANDMARKS.LEFT_SHOULDER, POSE_LANDMARKS.RIGHT_SHOULDER],
         [POSE_LANDMARKS.LEFT_SHOULDER, POSE_LANDMARKS.LEFT_ELBOW],
         [POSE_LANDMARKS.LEFT_ELBOW, POSE_LANDMARKS.LEFT_WRIST],
@@ -102,6 +155,28 @@ function draw(results: Results) {
     //   lineWidth: 2,
     // });
   }
+
+  if (showTip) {
+    if (part) {
+      drawLandmarks(canvasCtx, [part], {
+        color: "#FF0000",
+        lineWidth: 5,
+      });
+    }
+    if (target) {
+      drawLandmarks(canvasCtx, [target], {
+        color: "#00FF00",
+        lineWidth: 5,
+      });
+    }
+    if (part && target) {
+      drawConnectors(canvasCtx, [part, target], [[0, 1]], {
+        color: "#00FF00",
+        lineWidth: 3,
+      });
+    }
+  }
+
   canvasCtx.restore();
 }
 

@@ -7,7 +7,13 @@
     <link rel="stylesheet" href="/src/index.css" />
   </head>
   <body>
-    <h1 class="text-5xl text-center p-5">Koning</h1>
+    <div class="text-center flex justify-evenly items-center m-4">
+      <h2 class="text-3xl text-green-500">Score: <span id="score">0</span></h2>
+      <h1 class="text-5xl">Koning</h1>
+      <button id="show-tip" class="rounded bg-yellow-500 text-white px-2 py-1">
+        Toon tip
+      </button>
+    </div>
     <div>
       <video id="input" hidden disabled></video>
       <canvas id="output" class="fit-centered"></canvas>
