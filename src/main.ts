@@ -18,10 +18,10 @@ const HEIGHT = 720;
 
 // DOM elements
 const scoreElement = document.getElementById("score") as HTMLElement;
-const tipElement = document.getElementById("show-tip") as HTMLButtonElement;
+const tipElement = document.getElementById("show-tip") as HTMLInputElement;
 const cameraElement = document.getElementById(
   "show-camera"
-) as HTMLButtonElement;
+) as HTMLInputElement;
 const videoElement = document.getElementById("input") as HTMLVideoElement;
 const canvasElement = document.getElementById("output") as HTMLCanvasElement;
 const canvasCtx = canvasElement.getContext("2d") as CanvasRenderingContext2D;
@@ -42,14 +42,14 @@ let currentMovement = 0;
 // Tip
 let showTip = false;
 tipElement.addEventListener("click", () => {
-  showTip = !showTip;
+  showTip = tipElement.checked;
   currentMovement = 0;
 });
 
 // Camera
 let showCamera = false;
 cameraElement.addEventListener("click", () => {
-  showCamera = !showCamera;
+  showCamera = cameraElement.checked;
 });
 
 // Score

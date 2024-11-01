@@ -7,15 +7,27 @@
     <link rel="stylesheet" href="/src/index.css" />
   </head>
   <body>
-    <div class="text-center flex justify-evenly items-center m-4">
-      <h2 class="text-3xl text-green-500">Score: <span id="score">0</span></h2>
+    <div
+      class="bg-white bg-opacity-80 w-full p-4 text-center flex justify-evenly items-center"
+    >
+      <h2
+        class="rounded border-2 border-green-500 text-4xl text-green-500 px-2 py-1"
+      >
+        Score: <span id="score">0</span>
+      </h2>
       <h1 class="text-5xl">Koning</h1>
-      <button id="show-tip" class="rounded bg-yellow-500 text-white px-2 py-1">
-        Toon tip
-      </button>
-      <button id="show-camera" class="rounded bg-blue-500 text-white px-2 py-1">
-        Toon camera
-      </button>
+      <form class="flex flex-row gap-4">
+        <div
+          class="rounded border-2 border-yellow-500 accent-yellow-500 px-2 py-1"
+        >
+          <input type="checkbox" id="show-tip" />
+          <label for="show-tip">Toon tip💡</label>
+        </div>
+        <div class="rounded border-2 border-blue-500 accent-blue-500 px-2 py-1">
+          <input type="checkbox" id="show-camera" />
+          <label for="show-camera">Toon camera 📷</label>
+        </div>
+      </form>
     </div>
     <div>
       <video id="input" hidden disabled></video>
