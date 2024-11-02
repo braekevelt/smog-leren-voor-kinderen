@@ -30,11 +30,54 @@ videoElement2.autoplay = true;
 videoElement2.muted = false;
 
 // Movements
-const movements = [
-  ["leftIndexFinger", "rightShoulder"],
-  ["leftIndexFinger", "leftHip"],
-];
+const leftBottomHead = (results: Results) => results.faceLandmarks?.[288];
+const leftIndexFinger = (results: Results) => results.leftHandLandmarks?.[8];
+const leftHip = (results: Results) =>
+  results.poseLandmarks?.[POSE_LANDMARKS.LEFT_HIP];
+const leftMiddleHead = (results: Results) => results.faceLandmarks?.[323];
+const leftShoulder = (results: Results) =>
+  results.poseLandmarks?.[POSE_LANDMARKS.LEFT_SHOULDER];
+const leftTopHead = (results: Results) => results.faceLandmarks?.[251];
+const rightIndexFinger = (results: Results) => results.rightHandLandmarks?.[8];
+const rightNose = (results: Results) => results.faceLandmarks?.[48];
+const rightShoulder = (results: Results) =>
+  results.poseLandmarks?.[POSE_LANDMARKS.RIGHT_SHOULDER];
+const mouthTop = (results: Results) => results.faceLandmarks?.[11];
+
+const allMovements: Record<
+  string,
+  [
+    (results: Results) => NormalizedLandmark,
+    (results: Results) => NormalizedLandmark
+  ][]
+> = {
+  koning: [
+    [leftIndexFinger, rightShoulder],
+    [leftIndexFinger, leftHip],
+  ],
+  boos: [[leftIndexFinger, leftShoulder]],
+  braaf: [
+    [leftIndexFinger, leftTopHead],
+    [leftIndexFinger, leftBottomHead],
+  ],
+  danku: [[leftIndexFinger, mouthTop]],
+  fruit: [
+    [leftIndexFinger, rightNose],
+    [leftIndexFinger, leftMiddleHead],
+  ],
+  "jas-aandoen": [
+    [leftIndexFinger, leftShoulder],
+    [rightIndexFinger, rightShoulder],
+    [leftIndexFinger, rightIndexFinger],
+  ],
+};
+
 let currentMovement = 0;
+const resetCurrentMovement = () => {
+  currentMovement = 0;
+};
+selectElement.addEventListener("change", resetCurrentMovement);
+exampleElement.addEventListener("click", resetCurrentMovement);
 
 // Example
 const updateVideoElement2 = () => {
@@ -141,56 +184,6 @@ function draw(results: Results) {
   }
 
   // Win condition
-  if (exampleElement.checked) {
-    currentMovement = 0;
-  } else {
-    const parts: Record<string, NormalizedLandmark> = {
-      leftHip: results.poseLandmarks?.[POSE_LANDMARKS.LEFT_HIP],
-      leftIndexFinger: results.leftHandLandmarks?.[8],
-      rightShoulder: results.poseLandmarks?.[POSE_LANDMARKS.RIGHT_SHOULDER],
-    };
-
-    const movement = movements[currentMovement];
-    const part = parts[movement[0]];
-    const target = parts[movement[1]];
-
-    if (part && target) {
-      if (
-        Math.abs(part.x - target.x) < 0.1 &&
-        Math.abs(part.y - target.y) < 0.1
-      ) {
-        currentMovement += 1;
-      }
-    }
-
-    if (currentMovement >= movement.length) {
-      score += 1;
-      scoreElement.innerHTML = `${score}`;
-      currentMovement = 0;
-      lastScoreIncrease = Date.now();
-    }
-
-    if (tipElement.checked) {
-      if (part) {
-        drawLandmarks(canvasCtx, [part], {
-          color: "#FF0000",
-          lineWidth: 5,
-        });
-      }
-      if (target) {
-        drawLandmarks(canvasCtx, [target], {
-          color: "#00FF00",
-          lineWidth: 5,
-        });
-      }
-      if (part && target) {
-        drawConnectors(canvasCtx, [part, target], [[0, 1]], {
-          color: "#00FF00",
-          lineWidth: 3,
-        });
-      }
-    }
-  }
   if (Date.now() - lastScoreIncrease < SUCCESS_MESSAGE_DURATION) {
     canvasCtx.font = "64px serif";
     canvasCtx.textAlign = "center";
@@ -199,6 +192,55 @@ function draw(results: Results) {
       canvasElement.width / 2,
       canvasElement.height / 2
     );
+  } else if (!exampleElement.checked) {
+    const movements = allMovements[selectElement.value];
+    const movement = movements?.[currentMovement];
+    if (movement) {
+      const part = movement[0](results);
+      const target = movement[1](results);
+
+      if (part && target) {
+        if (
+          Math.abs(part.x - target.x) < 0.1 &&
+          Math.abs(part.y - target.y) < 0.1
+        ) {
+          currentMovement += 1;
+        }
+      }
+
+      if (currentMovement >= movements.length) {
+        score += 1;
+        scoreElement.innerHTML = `${score}`;
+        lastScoreIncrease = Date.now();
+        currentMovement = 0;
+        const options = [...selectElement.options].filter(
+          (option) => option.value !== selectElement.value
+        );
+        selectElement.value =
+          options[Math.floor(Math.random() * options.length)].value;
+      }
+
+      if (tipElement.checked) {
+        if (part) {
+          drawLandmarks(canvasCtx, [part], {
+            color: "#FF0000",
+            lineWidth: 5,
+          });
+        }
+        if (target) {
+          drawLandmarks(canvasCtx, [target], {
+            color: "#00FF00",
+            lineWidth: 5,
+          });
+        }
+        if (part && target) {
+          drawConnectors(canvasCtx, [part, target], [[0, 1]], {
+            color: "#00FF00",
+            lineWidth: 3,
+          });
+        }
+      }
+    }
   }
 
   canvasCtx.restore();
@@ -266,7 +308,7 @@ if (!isWebCamSupported) {
       await videoElement1.play();
     })
     .catch((e) => {
-      console.log(e?.message);
+      console.error(e?.message);
       alert("Er is een fout opgetreden. Probeer opnieuw.");
       location.reload();
     });
