@@ -4,35 +4,53 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SMOG leren voor kinderen</title>
+    <link rel="icon" type="image/png" href="/images/favicon.png" />
     <link rel="stylesheet" href="/src/index.css" />
   </head>
   <body>
     <div
-      class="bg-white bg-opacity-80 w-full p-4 text-center flex justify-evenly items-center"
+      class="bg-white bg-opacity-80 w-full p-4 text-center gap-2 flex justify-evenly items-center flex-wrap"
     >
       <p
-        class="rounded border-2 border-green-500 text-xl text-green-500 px-2 py-1"
+        class="rounded border-2 border-green-500 text-3xl text-green-500 px-2 py-1"
       >
         Score: <span id="score">0</span>
       </p>
       <form class="text-3xl">
         <select
-          class="appearance-none bg-transparent rounded border-2 border-black px-2 py-1"
+          id="select"
+          class="appearance-none bg-transparent rounded border-2 border-black text-center px-2 py-1"
         >
-          <option value="koning">Koning</option>
-          <option value="frietjes">Frietjes</option>
+          <option value="boos">Boos</option>
+          <option value="braaf">Braaf</option>
+          <option value="danku">Danku</option>
+          <option value="fruit">Fruit</option>
+          <option value="jas-aandoen">Jas aandoen</option>
         </select>
       </form>
-      <form class="flex flex-row gap-4">
+      <form class="flex flex-row gap-2">
+        <div class="rounded border-2 border-red-500 accent-red-500 px-2 py-1">
+          <input type="checkbox" id="show-example" />
+          <label for="show-example">
+            Voorbeeld 🆘
+            <a
+              href="https://smog.vlaanderen/ontdek-smog-gebaren"
+              target="_blank"
+              class="underline"
+            >
+              [bron]
+            </a>
+          </label>
+        </div>
         <div
           class="rounded border-2 border-yellow-500 accent-yellow-500 px-2 py-1"
         >
           <input type="checkbox" id="show-tip" />
-          <label for="show-tip">Toon tip💡</label>
+          <label for="show-tip">Hint 💡</label>
         </div>
         <div class="rounded border-2 border-blue-500 accent-blue-500 px-2 py-1">
           <input type="checkbox" id="show-camera" />
-          <label for="show-camera">Toon camera 📷</label>
+          <label for="show-camera">Camera 📷</label>
         </div>
       </form>
     </div>
