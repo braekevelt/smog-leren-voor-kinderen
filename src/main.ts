@@ -37,11 +37,11 @@ const movements = [
 let currentMovement = 0;
 
 // Example
-const updateVideoElement2 = async () => {
+const updateVideoElement2 = () => {
   videoElement2.src = `videos/${selectElement.value}.mp4`;
   if (exampleElement.checked) {
     videoElement2.load?.();
-    await videoElement2.play();
+    videoElement2.play();
   } else {
     videoElement2.pause();
   }
