@@ -252,9 +252,9 @@ function draw(results: Results) {
 // Detection
 const holistic = new Holistic({
   locateFile: (file) => {
-    return `https://cdn.jsdelivr.net/npm/@mediapipe/holistic@0.5.1675471629/${file}`;
-    // return new URL(`/node_modules/@mediapipe/holistic/${file}`, import.meta.url)
-    //   .href;
+    // return `https://cdn.jsdelivr.net/npm/@mediapipe/holistic@0.5.1675471629/${file}`;
+    return new URL(`/node_modules/@mediapipe/holistic/${file}`, import.meta.url)
+      .href;
   },
 });
 holistic.setOptions({
