@@ -295,24 +295,38 @@ async function render() {
 }
 
 // Start rendering loop
+async function main() {
+  const mediaStream = await navigator.mediaDevices.getUserMedia({
+    video: true,
+  });
+
+  // Older browsers may not have srcObject
+  try {
+    videoElement1.srcObject = mediaStream;
+  } catch (e: any) {
+    if (e.name !== "TypeError") {
+      throw e;
+    }
+    // Avoid using this in new browsers, as it is going away.
+    videoElement1.src = URL.createObjectURL(mediaStream as any);
+  }
+
+  videoElement1.addEventListener("loadeddata", render);
+  videoElement1.load?.();
+  await videoElement1.play();
+}
+
 const isWebCamSupported = !!navigator.mediaDevices?.getUserMedia;
 if (!isWebCamSupported) {
-  alert(
-    "Je browser is niet ondersteund. Probeer in een andere browser of een ander toestel."
-  );
+  console.log(isWebCamSupported);
+  // alert(
+  //   "Je browser is niet ondersteund. Probeer in een andere browser of een ander toestel."
+  // );
   // location.reload();
 } else {
-  navigator.mediaDevices
-    .getUserMedia({ video: true })
-    .then(async (stream) => {
-      videoElement1.srcObject = stream;
-      videoElement1.addEventListener("loadeddata", render);
-      videoElement1.load?.();
-      await videoElement1.play();
-    })
-    .catch((e) => {
-      console.error(e?.message);
-      alert("Er is een fout opgetreden. Probeer opnieuw.");
-      // location.reload();
-    });
+  main().catch((e) => {
+    console.error(`${e?.message} ${e?.stack}`);
+    // alert("Er is een fout opgetreden. Probeer opnieuw.");
+    // location.reload();
+  });
 }
