@@ -31,8 +31,7 @@ videoElement1.playsInline = true;
 let videoElement2 = document.createElement("video");
 videoElement2.playsInline = true;
 videoElement2.loop = true;
-videoElement2.autoplay = false;
-videoElement2.muted = true;
+videoElement2.muted = false;
 
 // Movements
 const leftBottomHead = (results: Results) => results.faceLandmarks?.[288];
@@ -330,15 +329,15 @@ async function main() {
 
 const isWebCamSupported = !!navigator.mediaDevices?.getUserMedia;
 if (!isWebCamSupported) {
-  console.log(isWebCamSupported);
-  // alert(
-  //   "Je browser is niet ondersteund. Probeer in een andere browser of een ander toestel."
-  // );
-  // location.reload();
+  console.error(isWebCamSupported);
+  alert(
+    "Je browser is niet ondersteund. Probeer in een andere browser of een ander toestel."
+  );
+  location.reload();
 } else {
   main().catch((e) => {
     console.error(`main: ${e?.message} ${e?.stack}`);
-    // alert("Er is een fout opgetreden. Probeer opnieuw.");
-    // location.reload();
+    alert("Er is een fout opgetreden. Probeer opnieuw.");
+    location.reload();
   });
 }
