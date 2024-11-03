@@ -29,8 +29,8 @@ const canvasCtx = canvasElement.getContext("2d") as CanvasRenderingContext2D;
 const videoElement1 = document.createElement("video");
 let videoElement2 = document.createElement("video");
 videoElement2.loop = true;
-videoElement2.autoplay = true;
-// videoElement2.muted = false;
+videoElement2.autoplay = false;
+videoElement2.muted = true;
 
 // Movements
 const leftBottomHead = (results: Results) => results.faceLandmarks?.[288];
