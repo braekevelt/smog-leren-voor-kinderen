@@ -83,11 +83,17 @@ selectElement.addEventListener("change", resetCurrentMovement);
 exampleElement.addEventListener("click", resetCurrentMovement);
 
 // Example
-const updateVideoElement2 = () => {
+const updateVideoElement2 = async () => {
   videoElement2.src = `videos/${selectElement.value}.mp4`;
   if (exampleElement.checked) {
     videoElement2.load?.();
-    videoElement2.play();
+    try {
+      if (videoElement2.paused) {
+        await videoElement2.play();
+      }
+    } catch (e: any) {
+      console.error(`updateVideoElement2 > play: ${e?.message} ${e?.stack}`);
+    }
   } else {
     videoElement2.pause();
   }
@@ -287,7 +293,11 @@ async function render() {
     }
 
     // Detect and draw
-    await holistic.send({ image: videoElement });
+    try {
+      await holistic.send({ image: videoElement });
+    } catch (e: any) {
+      console.error(`render > send: ${e?.message} ${e?.stack}`);
+    }
   }
 
   // Rerender on next frame
@@ -325,7 +335,7 @@ if (!isWebCamSupported) {
   // location.reload();
 } else {
   main().catch((e) => {
-    console.error(`${e?.message} ${e?.stack}`);
+    console.error(`main: ${e?.message} ${e?.stack}`);
     // alert("Er is een fout opgetreden. Probeer opnieuw.");
     // location.reload();
   });
