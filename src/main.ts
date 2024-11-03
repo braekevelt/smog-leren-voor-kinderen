@@ -300,7 +300,7 @@ if (!isWebCamSupported) {
   alert(
     "Je browser is niet ondersteund. Probeer in een andere browser of een ander toestel."
   );
-  location.reload();
+  // location.reload();
 } else {
   navigator.mediaDevices
     .getUserMedia({ video: true })
@@ -313,6 +313,6 @@ if (!isWebCamSupported) {
     .catch((e) => {
       console.error(e?.message);
       alert("Er is een fout opgetreden. Probeer opnieuw.");
-      location.reload();
+      // location.reload();
     });
 }
