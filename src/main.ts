@@ -14,6 +14,9 @@ import {
 // DOM elements
 const scoreElement = document.getElementById("score") as HTMLElement;
 const selectElement = document.getElementById("select") as HTMLSelectElement;
+const datalistElement = document.getElementById(
+  "options"
+) as HTMLDataListElement;
 const exampleElement = document.getElementById(
   "show-example"
 ) as HTMLInputElement;
@@ -213,7 +216,7 @@ function draw(results: Results) {
         scoreElement.innerHTML = `${score}`;
         lastScoreIncrease = Date.now();
         currentMovement = 0;
-        const options = [...selectElement.options].filter(
+        const options = [...datalistElement.options].filter(
           (option) => option.value !== selectElement.value
         );
         selectElement.value =

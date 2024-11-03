@@ -16,17 +16,22 @@
       >
         Score: <span id="score">0</span>
       </p>
-      <form class="text-3xl">
-        <select
+      <form class="text-3xl" onkeydown="return event.key != 'Enter';">
+        <input
           id="select"
+          type="text"
+          list="options"
+          value="boos"
+          placeholder="Kies een woord..."
           class="appearance-none bg-transparent rounded border-2 border-black text-center px-2 py-1"
-        >
+        />
+        <datalist id="options">
           <option value="boos">Boos</option>
           <option value="braaf">Braaf</option>
           <option value="danku">Danku</option>
           <option value="fruit">Fruit</option>
           <option value="jas-aandoen">Jas aandoen</option>
-        </select>
+        </datalist>
       </form>
       <form class="flex flex-row gap-2">
         <div class="rounded border-2 border-red-500 accent-red-500 px-2 py-1">
