@@ -38,7 +38,7 @@ videoElement2.muted = false;
 const leftBottomHead = (results: Results) => results.faceLandmarks?.[288];
 const leftIndexFinger = (results: Results) => results.leftHandLandmarks?.[8];
 const leftIndexHand = (results: Results) => results.leftHandLandmarks?.[5];
-const leftHandBottom = (results: Results) => results.leftHandLandmarks?.[0];
+// const leftHandBottom = (results: Results) => results.leftHandLandmarks?.[0];
 const leftHip = (results: Results) =>
   results.poseLandmarks?.[POSE_LANDMARKS.LEFT_HIP];
 const leftMiddleHead = (results: Results) => results.faceLandmarks?.[323];
@@ -47,7 +47,7 @@ const leftPinkyHand = (results: Results) => results.leftHandLandmarks?.[17];
 const leftShoulder = (results: Results) =>
   results.poseLandmarks?.[POSE_LANDMARKS.LEFT_SHOULDER];
 const leftTopHead = (results: Results) => results.faceLandmarks?.[251];
-const leftWrist = (results: Results) => results.poseLandmarks?.[15];
+// const leftWrist = (results: Results) => results.poseLandmarks?.[15];
 const rightIndexFinger = (results: Results) => results.rightHandLandmarks?.[8];
 const rightIndexHand = (results: Results) => results.rightHandLandmarks?.[5];
 const rightNose = (results: Results) => results.faceLandmarks?.[48];
@@ -64,7 +64,7 @@ const neck = (results: Results): NormalizedLandmark => ({
       (results.poseLandmarks?.[12]?.y ?? 0)) /
     2,
 });
-const chin = (results: Results) => results.faceLandmarks?.[152];
+// const chin = (results: Results) => results.faceLandmarks?.[152];
 
 const allMovements: Record<
   string,
