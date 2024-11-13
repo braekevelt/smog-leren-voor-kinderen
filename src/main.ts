@@ -81,11 +81,11 @@ const allMovements: Record<
   boos: [
     [
       [leftIndexFinger, leftIndexHand, 0.05],
-      [leftIndexHand, neck, 0.1],
+      [leftIndexHand, neck, 0.12],
     ],
     [
       [leftIndexFinger, leftIndexHand, 0.05],
-      [leftIndexHand, leftShoulder, 0.05],
+      [leftIndexHand, leftShoulder, 0.1],
     ],
   ],
   braaf: [
