@@ -1,6 +1,7 @@
 import {
   drawConnectors,
   drawLandmarks,
+  drawRectangle,
   NormalizedLandmark,
 } from "@mediapipe/drawing_utils";
 import {
@@ -36,52 +37,99 @@ videoElement2.muted = false;
 // Movements
 const leftBottomHead = (results: Results) => results.faceLandmarks?.[288];
 const leftIndexFinger = (results: Results) => results.leftHandLandmarks?.[8];
+const leftIndexHand = (results: Results) => results.leftHandLandmarks?.[5];
+const leftHandBottom = (results: Results) => results.leftHandLandmarks?.[0];
 const leftHip = (results: Results) =>
   results.poseLandmarks?.[POSE_LANDMARKS.LEFT_HIP];
 const leftMiddleHead = (results: Results) => results.faceLandmarks?.[323];
+const leftPinkyFinger = (results: Results) => results.leftHandLandmarks?.[20];
+const leftPinkyHand = (results: Results) => results.leftHandLandmarks?.[17];
 const leftShoulder = (results: Results) =>
   results.poseLandmarks?.[POSE_LANDMARKS.LEFT_SHOULDER];
 const leftTopHead = (results: Results) => results.faceLandmarks?.[251];
+const leftWrist = (results: Results) => results.poseLandmarks?.[15];
 const rightIndexFinger = (results: Results) => results.rightHandLandmarks?.[8];
+const rightIndexHand = (results: Results) => results.rightHandLandmarks?.[5];
 const rightNose = (results: Results) => results.faceLandmarks?.[48];
 const rightShoulder = (results: Results) =>
   results.poseLandmarks?.[POSE_LANDMARKS.RIGHT_SHOULDER];
 const mouthTop = (results: Results) => results.faceLandmarks?.[11];
+const neck = (results: Results): NormalizedLandmark => ({
+  x:
+    ((results.poseLandmarks?.[11]?.x ?? 0) +
+      (results.poseLandmarks?.[12]?.x ?? 0)) /
+    2,
+  y:
+    ((results.poseLandmarks?.[11]?.y ?? 0) +
+      (results.poseLandmarks?.[12]?.y ?? 0)) /
+    2,
+});
+const chin = (results: Results) => results.faceLandmarks?.[152];
 
 const allMovements: Record<
   string,
   [
     (results: Results) => NormalizedLandmark,
-    (results: Results) => NormalizedLandmark
-  ][]
+    (results: Results) => NormalizedLandmark,
+    number
+  ][][]
 > = {
   koning: [
-    [leftIndexFinger, rightShoulder],
-    [leftIndexFinger, leftHip],
+    [[leftIndexFinger, rightShoulder, 0.1]],
+    [[leftIndexFinger, leftHip, 0.1]],
   ],
-  boos: [[leftIndexFinger, leftShoulder]],
+  boos: [
+    [
+      [leftIndexFinger, leftIndexHand, 0.05],
+      [leftIndexHand, neck, 0.1],
+    ],
+    [
+      [leftIndexFinger, leftIndexHand, 0.05],
+      [leftIndexHand, leftShoulder, 0.05],
+    ],
+  ],
   braaf: [
-    [leftIndexFinger, leftTopHead],
-    [leftIndexFinger, leftBottomHead],
+    [
+      [leftIndexFinger, leftTopHead, 0.05],
+      [leftIndexHand, leftBottomHead, 0.08],
+    ],
+    [[leftIndexFinger, leftBottomHead, 0.12]],
   ],
-  danku: [[leftIndexFinger, mouthTop]],
+  danku: [
+    [[leftIndexFinger, mouthTop, 0.05]],
+    [[leftPinkyHand, leftShoulder, 0.16]],
+  ],
   fruit: [
-    [leftIndexFinger, rightNose],
-    [leftIndexFinger, leftMiddleHead],
+    [
+      [leftIndexFinger, rightNose, 0.06],
+      [leftPinkyFinger, leftPinkyHand, 0.12],
+    ],
+    [
+      [leftIndexFinger, leftMiddleHead, 0.06],
+      [leftPinkyFinger, leftPinkyHand, 0.12],
+    ],
   ],
   "jas-aandoen": [
-    [leftIndexFinger, leftShoulder],
-    [rightIndexFinger, rightShoulder],
-    [leftIndexFinger, rightIndexFinger],
+    [
+      [leftIndexFinger, leftIndexHand, 0.05],
+      [leftIndexHand, leftShoulder, 0.15],
+      [rightIndexFinger, rightIndexHand, 0.05],
+      [rightIndexHand, rightShoulder, 0.15],
+    ],
+    [
+      [leftIndexHand, rightIndexHand, 0.1],
+      [leftIndexFinger, leftIndexHand, 0.05],
+      [rightIndexFinger, rightIndexHand, 0.05],
+    ],
   ],
 };
 
-let currentMovement = 0;
-const resetCurrentMovement = () => {
-  currentMovement = 0;
+let movementIndex = 0;
+const resetMovementIndex = () => {
+  movementIndex = 0;
 };
-selectElement.addEventListener("change", resetCurrentMovement);
-exampleElement.addEventListener("click", resetCurrentMovement);
+selectElement.addEventListener("change", resetMovementIndex);
+exampleElement.addEventListener("click", resetMovementIndex);
 
 // Example
 const updateVideoElement2 = async () => {
@@ -204,25 +252,30 @@ function draw(results: Results) {
     );
   } else if (!exampleElement.checked) {
     const movements = allMovements[selectElement.value];
-    const movement = movements?.[currentMovement];
-    if (movement) {
-      const part = movement[0](results);
-      const target = movement[1](results);
+    const movement = movements?.[movementIndex];
+    if (movement?.length) {
+      const currentMovement = movement.map(
+        ([part, target, distance]) =>
+          [part(results), target(results), distance] as const
+      );
 
-      if (part && target) {
-        if (
-          Math.abs(part.x - target.x) < 0.1 &&
-          Math.abs(part.y - target.y) < 0.1
-        ) {
-          currentMovement += 1;
-        }
+      if (
+        currentMovement.every(
+          ([part, target, distance]) =>
+            part &&
+            target &&
+            Math.abs(part.x - target.x) < distance &&
+            Math.abs(part.y - target.y) < distance
+        )
+      ) {
+        movementIndex += 1;
       }
 
-      if (currentMovement >= movements.length) {
+      if (movementIndex >= movements.length) {
         score += 1;
         scoreElement.innerHTML = `${score}`;
         lastScoreIncrease = Date.now();
-        currentMovement = 0;
+        movementIndex = 0;
         const options = [...datalistElement.options].filter(
           (option) => option.value !== selectElement.value
         );
@@ -231,23 +284,36 @@ function draw(results: Results) {
       }
 
       if (tipElement.checked) {
-        if (part) {
-          drawLandmarks(canvasCtx, [part], {
-            color: "#FF0000",
-            lineWidth: 5,
-          });
-        }
-        if (target) {
-          drawLandmarks(canvasCtx, [target], {
-            color: "#00FF00",
-            lineWidth: 5,
-          });
-        }
-        if (part && target) {
-          drawConnectors(canvasCtx, [part, target], [[0, 1]], {
-            color: "#00FF00",
-            lineWidth: 3,
-          });
+        for (const [part, target, distance] of currentMovement) {
+          if (part) {
+            drawLandmarks(canvasCtx, [part], {
+              color: "rgba(255, 0, 0, 1.0)",
+              lineWidth: 5,
+            });
+          }
+          if (target) {
+            drawRectangle(
+              canvasCtx,
+              {
+                xCenter: target.x,
+                yCenter: target.y,
+                width: distance * 2,
+                height: distance * 2,
+                rotation: 0,
+              },
+              {
+                color: "rgba(0, 255, 0, 0.0)",
+                fillColor: "rgba(0, 255, 0, 0.1)",
+                lineWidth: 3,
+              }
+            );
+          }
+          if (part && target) {
+            drawConnectors(canvasCtx, [part, target], [[0, 1]], {
+              color: "rgba(0, 255, 0, 1.0)",
+              lineWidth: 3,
+            });
+          }
         }
       }
     }
