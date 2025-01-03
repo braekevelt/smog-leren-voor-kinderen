@@ -31,6 +31,10 @@ For production:
 npm run build
 ```
 
+Deploy to Vercel:
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fbraekevelt%2Fsmog-leren-voor-kinderen)
+
 ## Contributing
 
 This project is no longer under active development and only serves as a example implementation for others now.
